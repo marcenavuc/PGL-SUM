@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from configs import get_config
 from solver import Solver
 from data_loader import get_loader

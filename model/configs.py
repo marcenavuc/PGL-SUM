@@ -1,10 +1,10 @@
-# -*- coding: utf-8 -*-
 import argparse
-import torch
-from pathlib import Path
 import pprint
+from pathlib import Path
 
-save_dir = Path('../PGL-SUM/Summaries/PGL-SUM/exp1')
+import torch
+
+SAVE_DIR = Path('../PGL-SUM/Summaries/PGL-SUM/exp1')
 
 
 def str2bool(v):
@@ -36,9 +36,9 @@ class Config(object):
 
         :param str video_type: The Dataset being used, SumMe or TVSum.
         """
-        self.log_dir = save_dir.joinpath(video_type, 'logs/split' + str(self.split_index))
-        self.score_dir = save_dir.joinpath(video_type, 'results/split' + str(self.split_index))
-        self.save_dir = save_dir.joinpath(video_type, 'models/split' + str(self.split_index))
+        self.log_dir = SAVE_DIR.joinpath(video_type, 'logs/split' + str(self.split_index))
+        self.score_dir = SAVE_DIR.joinpath(video_type, 'results/split' + str(self.split_index))
+        self.save_dir = SAVE_DIR.joinpath(video_type, 'models/split' + str(self.split_index))
 
     def __repr__(self):
         """Pretty-print configurations in alphabetical order"""
@@ -88,9 +88,3 @@ def get_config(parse=True, **optional_kwargs):
     kwargs.update(optional_kwargs)
 
     return Config(**kwargs)
-
-
-if __name__ == '__main__':
-    config = get_config()
-    import ipdb
-    ipdb.set_trace()

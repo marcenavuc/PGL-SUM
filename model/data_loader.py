@@ -1,12 +1,18 @@
-# -*- coding: utf-8 -*-
+import json
+
+import h5py
 import torch
 from torch.utils.data import Dataset, DataLoader
-import h5py
 import numpy as np
-import json
 
 
 class VideoData(Dataset):
+
+    DATASETS = {
+        "summe": 'data/SumMe/eccv16_dataset_summe_google_pool5.h5',
+        "tvsum": 'data/TVSum/eccv16_dataset_tvsum_google_pool5.h5',
+    }
+
     def __init__(self, mode, video_type, split_index):
         """ Custom Dataset class wrapper for loading the frame features and ground truth importance scores.
 
@@ -15,34 +21,30 @@ class VideoData(Dataset):
         :param int split_index: The index of the Dataset split being used.
         """
         self.mode = mode
-        self.name = video_type.lower()
-        self.datasets = ['../PGL-SUM/data/datasets/SumMe/eccv16_dataset_summe_google_pool5.h5',
-                         '../PGL-SUM/data/datasets/TVSum/eccv16_dataset_tvsum_google_pool5.h5']
-        self.splits_filename = ['../PGL-SUM/data/datasets/splits/' + self.name + '_splits.json']
+        self.splits_filename = 'data/splits/' + video_type.lower() + '_splits.json'
         self.split_index = split_index  # it represents the current split (varies from 0 to 4)
 
-        if 'summe' in self.splits_filename[0]:
-            self.filename = self.datasets[0]
-        elif 'tvsum' in self.splits_filename[0]:
-            self.filename = self.datasets[1]
-        hdf = h5py.File(self.filename, 'r')
-        self.list_frame_features, self.list_gtscores = [], []
+        self.filename = self.DATASETS[video_type.lower()]
 
-        with open(self.splits_filename[0]) as f:
+        self.list_frame_features = []
+        self.list_gtscores = []
+
+        with open(self.splits_filename) as f:
             data = json.loads(f.read())
-            for i, split in enumerate(data):
-                if i == self.split_index:
-                    self.split = split
-                    break
+            self.split = data[self.split_index]
+            # for i, split in enumerate(data):
+            #     if i == self.split_index:
+            #         self.split = split
+            #         break
 
-        for video_name in self.split[self.mode + '_keys']:
-            frame_features = torch.Tensor(np.array(hdf[video_name + '/features']))
-            gtscore = torch.Tensor(np.array(hdf[video_name + '/gtscore']))
+        # Reading saved datasets
+        with h5py.File(self.filename, 'r') as hdf:
+            for video_name in self.split[self.mode + '_keys']:
+                frame_features = torch.Tensor(np.array(hdf[video_name + '/features']))
+                gtscore = torch.Tensor(np.array(hdf[video_name + '/gtscore']))
 
-            self.list_frame_features.append(frame_features)
-            self.list_gtscores.append(gtscore)
-
-        hdf.close()
+                self.list_frame_features.append(frame_features)
+                self.list_gtscores.append(gtscore)
 
     def __len__(self):
         """ Function to be called for the `len` operator of `VideoData` Dataset. """
@@ -80,7 +82,3 @@ def get_loader(mode, video_type, split_index):
         return DataLoader(vd, batch_size=1, shuffle=True)
     else:
         return VideoData(mode, video_type, split_index)
-
-
-if __name__ == '__main__':
-    pass

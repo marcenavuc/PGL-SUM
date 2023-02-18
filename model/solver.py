@@ -1,14 +1,15 @@
-# -*- coding: utf-8 -*-
+import os
+import random
+import json
+
+import h5py
 import torch
 import torch.nn as nn
 import torch.optim as optim
 import numpy as np
-import os
-import random
-import json
-import h5py
 from tqdm import tqdm, trange
 from layers.summarizer import PGL_SUM
+
 from utils import TensorboardWriter
 
 
@@ -112,8 +113,8 @@ class Solver(object):
 
             self.writer.update_loss(loss, epoch_i, 'loss_epoch')
             # Uncomment to save parameters at checkpoint
-            if not os.path.exists(self.config.save_dir):
-                os.makedirs(self.config.save_dir)
+            if not os.path.exists(self.config.SAVE_DIR):
+                os.makedirs(self.config.SAVE_DIR)
             # ckpt_path = str(self.config.save_dir) + f'/epoch-{epoch_i}.pkl'
             # tqdm.write(f'Save parameters at {ckpt_path}')
             # torch.save(self.model.state_dict(), ckpt_path)
@@ -154,7 +155,3 @@ class Solver(object):
             if save_weights:
                 with h5py.File(weights_save_path, 'a') as weights:
                     weights.create_dataset(f"{video_name}/epoch_{epoch_i}", data=attn_weights)
-
-
-if __name__ == '__main__':
-    pass
